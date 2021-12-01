@@ -21,6 +21,7 @@ library(ggplot2)
 library(rstatix) # normality
 library(pastecs) # homgenity of Variances
 library(ez) # ezANOVA for Mixed Anova
+library(stats) # interaction plots
 
 # Exporting Information #
 auto_export <- FALSE # automatically export graphs
@@ -47,15 +48,6 @@ vplData
 
 orderColours = c("RED", "BLUE")
 
-# overview of data
-ggboxplot(data = vplData, x = "Order", y = "Time",
-          color = "Order", palette = orderColours,
-          order = c("A->B", "B->A"),
-          title = "HCI-FNL_PJT - Time - Order-Based Box Plot (Raw Data)",
-          fill = c("GREY", "GREY"),
-          ylab = "Clear Time", xlab = "Order Group"
-          )
-
 # bar graph - ver. 1
 ggbarplot(data = vplData, x = "Order", y = "Time",
           color = "Order", palette = orderColours,
@@ -81,6 +73,8 @@ bargraph + stat_summary(fun = mean, geom = "bar") +
   stat_summary(fun.data = mean_sd,  geom = "errorbar", width = 0.3) + 
   labs(title = "HCI-FNL_PJT - Bar Graph (Raw Data)", x = "Order", y = "Time")
 
+# TODO: COUNTERBALANCE
+
 # MIXED ANOVA
 # Assumptions
 
@@ -90,7 +84,20 @@ vplData %>%
   identify_outliers(Time)
 
 # boxplot(formula = vplData$Time ~ vplData$Course * vplData$Order)
+# outlier check - ver. 1
 boxplot(formula = vplData$Time ~ vplData$Order)
+
+# outlier check - ver. 2
+ggboxplot(data = vplData, x = "Order", y = "Time",
+          color = "Order", palette = orderColours,
+          order = c("A->B", "B->A"),
+          title = "HCI-FNL_PJT - Time - Order-Based Box Plot (Raw Data)",
+          fill = c("GREY", "GREY"),
+          ylab = "Clear Time", xlab = "Order Group"
+)
+
+# TODO: use this to take out outliers
+# vplData_no <- with(vplData, Time[Order == "A->B"] - Time[Order == "B->A"])
 
 ###
 # Normality
@@ -128,12 +135,31 @@ vplData %>%
   group_by(Course) %>%
   levene_test(Time ~ Order)
 
+###
+# Homogeneity of Covariances
+if(!require(rstatix)) install.packages("rstatix")
+
+box_m(vplData["Time"], vplData$Course)
+
 
 # Mixed ANOVA Test with ezANOVA
 if(!require(ez)) install.packages("ez")
 
 # TODO: check if type should be changed.
-vplDataMixed <- ezANOVA(data = vplData, dv = .(Time), 
+vplData_MixedANOVA <- ezANOVA(data = vplData, dv = .(Time), 
                         wid = .(Participant), within = .(Course), between = .(Order),
                         detailed = T, type = 3)
+vplData_MixedANOVA
+
+
+# --- #
+
+
+# OTHER RESULTS
+# interaction plots
+if(!require(stats)) install.packages("stats")
+
+# pairwise tests #
+# pairwise.t.test(vplData$Time, interaction(vplData$Course, vplData$Order), paired=T, p.adjust.method ="bonferroni")
+# pairwise.t.test(vplData$Time, interaction(vplData$Order, vplData$Course), paired=T, p.adjust.method ="bonferroni") # recommended
 
