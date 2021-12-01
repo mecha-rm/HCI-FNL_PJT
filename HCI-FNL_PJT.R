@@ -30,6 +30,7 @@ export_path <- "exports" # export path from working directory
 # installing the required package.
 if (!require(readxl)) install.packages(readxl)
 
+# TODO: might need to specify the page if the questionnaire data gets put in the same file.
 vplData <- read_xlsx("imports/vpl-fnl_pjt_data.xlsx")
 vplData
 
@@ -96,7 +97,7 @@ ggboxplot(data = vplData, x = "Order", y = "Time",
           ylab = "Clear Time", xlab = "Order Group"
 )
 
-# TODO: use this to take out outliers
+# TODO: remove outliers.
 # vplData_no <- with(vplData, Time[Order == "A->B"] - Time[Order == "B->A"])
 
 ###
@@ -152,14 +153,46 @@ vplData_MixedANOVA <- ezANOVA(data = vplData, dv = .(Time),
 vplData_MixedANOVA
 
 
-# --- #
 
-
-# OTHER RESULTS
-# interaction plots
+# INTERACTION #
+# post-hoc, interaction plots, and effects
 if(!require(stats)) install.packages("stats")
 
-# pairwise tests #
-# pairwise.t.test(vplData$Time, interaction(vplData$Course, vplData$Order), paired=T, p.adjust.method ="bonferroni")
-# pairwise.t.test(vplData$Time, interaction(vplData$Order, vplData$Course), paired=T, p.adjust.method ="bonferroni") # recommended
+# post-hoc tests
+pairwise.t.test(vplData$Time, vplData$Course, paired=T, p.adjust.method ="bonferroni")
+pairwise.t.test(vplData$Time, vplData$Order, paired=T, p.adjust.method ="bonferroni") # recommended
 
+
+# Bargraphs with Error Bars (include these if the effect sizes are significant)
+bargraph <- ggplot(vplData, aes(Order, Time))
+bargraph + stat_summary(fun = mean, geom = "bar") + 
+  stat_summary(fun.data = mean_sd,  geom = "errorbar", width = 0.3) + 
+  labs(title = "HCI-FNL_PJT - Bar Graph (Raw Data)", x = "Order", y = "Time")
+
+
+# Interaction Plots (include these if the interactions are significant)
+# pairwise tests (for interaction plots)
+pairwise.t.test(vplData$Time, interaction(vplData$Course, vplData$Order), paired=T, p.adjust.method ="bonferroni")
+pairwise.t.test(vplData$Time, interaction(vplData$Order, vplData$Course), paired=T, p.adjust.method ="bonferroni") # recommended
+
+# Interaction Plots #
+# interaction plots (X = Order) (recommended)
+interaction.plot(x.factor = vplData$Order, trace.factor = vplData$Course,
+                 response = vplData$Time, fun = mean, type = "b", legend = TRUE, 
+                 xlab = "Order", ylab="Time", col = orderColours, trace.label ="Course")
+
+# interaction plots (X = Course)
+interaction.plot(x.factor = vplData$Course, trace.factor = vplData$Order,
+                 response = vplData$Time, fun = mean, type = "b", legend = TRUE, 
+                 xlab = "Course", ylab="Time", col = orderColours, trace.label ="Order")
+
+
+# QUALITIVE ANALYSES #
+# TODO: provide standard questionnaire and self-developed questionnaire responses.
+# - display the information in diverging stacked bar charts.
+# - include data for user-defined test and standard test. Standard test chosen is SUS.
+
+# TODO: perform Wilcoxon and Friedman tests.
+
+# regarding free-form questions 
+print("See included report for free form question responses and reportings on findings.")
