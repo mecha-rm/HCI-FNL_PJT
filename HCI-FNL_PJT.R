@@ -14,12 +14,12 @@
 # INFR 4350U: Human-Computer Interaction for Games - Final Project
 
 library(tidyverse)
-library(ggpubr)
+library(ggpubr) # qqplot
 library(dplyr)
 library(ggplot2)
 
 library(rstatix) # normality
-library(pastecs) # homgenity of Variances
+library(pastecs) # homogeneity of Variances
 library(ez) # ezANOVA for Mixed Anova
 library(stats) # interaction plots
 
@@ -30,9 +30,17 @@ export_path <- "exports" # export path from working directory
 # installing the required package.
 if (!require(readxl)) install.packages(readxl)
 
-# TODO: might need to specify the page if the questionnaire data gets put in the same file.
-vplData <- read_xlsx("imports/vpl-fnl_pjt_data.xlsx")
+# gets the results data
+vplData <- read_xlsx("imports/vpl-fnl_pjt_data.xlsx", sheet = "Results")
 vplData
+
+# gets the SUS data
+SUS <- read_xlsx("imports/vpl-fnl_pjt_data.xlsx", sheet = "SUS")
+SUS
+
+# gets the questionnaire data
+qnaire <- read_xlsx("imports/vpl-fnl_pjt_data.xlsx", sheet = "Questionnaire")
+qnaire
 
 # NOTES
 # Participants: 10
@@ -88,6 +96,9 @@ vplData %>%
 # outlier check - ver. 1
 boxplot(formula = vplData$Time ~ vplData$Order)
 
+# used for qqplots
+if (!require(ggpubr)) install.packages(ggpubr)
+
 # outlier check - ver. 2
 ggboxplot(data = vplData, x = "Order", y = "Time",
           color = "Order", palette = orderColours,
@@ -102,11 +113,14 @@ ggboxplot(data = vplData, x = "Order", y = "Time",
 
 ###
 # Normality
-if (!require(rstatix)) install.packages(rstatix)
+if (!require(ggpubr)) install.packages(ggpubr)
 
 vplData %>%
   group_by(Order) %>%
   shapiro_test(Time) # get p-value for homogeneity check
+
+ggqqplot(vplData, x = "Time", facet.by = "Course", 
+         title = "HCI-FNL_PJT - QQPlot for Normality (Course Faceted)")
 
 ###
 # Assumption of Sphereicity
@@ -196,3 +210,4 @@ interaction.plot(x.factor = vplData$Course, trace.factor = vplData$Order,
 
 # regarding free-form questions 
 print("See included report for free form question responses and reportings on findings.")
+
