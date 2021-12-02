@@ -22,10 +22,15 @@ library(rstatix) # normality
 library(pastecs) # homogeneity of Variances
 library(ez) # ezANOVA for Mixed Anova
 library(stats) # interaction plots
+library(reshape) # diverging stacked bargraphs
+library(likert) # diverging stacked bargraphs
 
 # Exporting Information #
 auto_export <- FALSE # automatically export graphs
 export_path <- "exports" # export path from working directory
+
+# the rank clamps for the questionnaires
+qnaireClamps = c(0, 4)
 
 # installing the required package.
 if (!require(readxl)) install.packages(readxl)
@@ -35,12 +40,22 @@ vplData <- read_xlsx("imports/vpl-fnl_pjt_data.xlsx", sheet = "Results")
 vplData
 
 # gets the SUS data
-SUS <- read_xlsx("imports/vpl-fnl_pjt_data.xlsx", sheet = "SUS")
-SUS
+sus <- read_xlsx("imports/vpl-fnl_pjt_data.xlsx", sheet = "SUS")
+sus
+
+# clamping the rankings.
+sus$Rank[sus$Rank < qnaireClamps[1] ] <- qnaireClamps[1] 
+sus$Rank[sus$Rank > qnaireClamps[2] ] <- qnaireClamps[2]
 
 # gets the questionnaire data
 qnaire <- read_xlsx("imports/vpl-fnl_pjt_data.xlsx", sheet = "Questionnaire")
 qnaire
+
+# clamping the rankings.
+qnaire$Rank[qnaire$Rank < qnaireClamps[1] ] <- qnaireClamps[1] 
+qnaire$Rank[qnaire$Rank > qnaireClamps[2] ] <- qnaireClamps[2]
+
+
 
 # NOTES
 # Participants: 10
@@ -205,6 +220,53 @@ interaction.plot(x.factor = vplData$Course, trace.factor = vplData$Order,
 # TODO: provide standard questionnaire and self-developed questionnaire responses.
 # - display the information in diverging stacked bar charts.
 # - include data for user-defined test and standard test. Standard test chosen is SUS.
+
+# needed for casting.
+if(!require(reshape)) install.packages("reshape")
+if(!require(likert)) install.packages("likert")
+
+likOrder = c("A", "B")
+likColours <- c("#ffc7c7","#cdffc7","#c7f8ff","#ffff99","#fce3ff")
+
+# gets wide data version of the variables.
+
+
+# SUS #
+# wide data
+susWideData<-cast(sus, Participant + Course ~ Question, value = "Rank")
+
+# amount printed is (end - start + 1)
+susWideData_start = 3
+susWideData_end = 12
+
+# first six
+# susWideData_start = 3
+# susWideData_end = 8
+
+# applying data
+susWideData[susWideData_start:susWideData_end] <- lapply(susWideData[susWideData_start:susWideData_end], factor, levels = 0:4)
+
+# create new likert
+likSus <- likert::likert(susWideData[,c(susWideData_start:susWideData_end)], grouping = susWideData$Course)
+
+# plot
+plot(likSus, plot.percents = TRUE, colors = likColours, group.order = likOrder)
+
+
+###
+# QNAIRE #
+qnaireWideData<-cast(qnaire, Participant + Course ~ Question, value = "Rank")
+qnaireWideData_start = 3
+qnaireWideData_end = 8
+
+# applying data
+qnaireWideData[qnaireWideData_start:qnaireWideData_end] <- lapply(qnaireWideData[qnaireWideData_start:qnaireWideData_end], factor, levels = 0:4)
+
+# create new likert
+likQnaire <- likert::likert(qnaireWideData[,c(qnaireWideData_start:qnaireWideData_end)], grouping = qnaireWideData$Course)
+
+# plot
+plot(likQnaire, plot.percents = TRUE, colors = likColours, group.order = likOrder)
 
 # TODO: perform Wilcoxon and Friedman tests.
 
