@@ -4,7 +4,7 @@
 # * Hao Tian Guan (100709845)
 # * Roderick "R.J." Montague (100701758)
 #
-# Date: 12/01/2021
+# Date: 12/02/2021
 #
 # Description: final project for human-computer interaction for games.
 #
@@ -124,7 +124,8 @@ ggboxplot(data = vplData, x = "Order", y = "Time",
 )
 
 # TODO: remove outliers.
-# vplData_no <- with(vplData, Time[Order == "A->B"] - Time[Order == "B->A"])
+# vplDataRaw <- vplData
+# vplData <- with(vplData, Time[Order == "A->B"] - Time[Order == "B->A"])
 
 ###
 # Normality
