@@ -4,7 +4,7 @@
 # * Hao Tian Guan (100709845)
 # * Roderick "R.J." Montague (100701758)
 #
-# Date: 12/02/2021
+# Date: 12/11/2021
 #
 # Description: final project for human-computer interaction for games.
 #
@@ -252,6 +252,65 @@ likSus <- likert::likert(susWideData[,c(susWideData_start:susWideData_end)], gro
 
 # plot
 plot(likSus, plot.percents = TRUE, colors = likColours, group.order = likOrder)
+
+# WILCOXON TEST
+# data("mice2", package = "datarium")
+# head(mice2, 3)
+
+# Transform into long data: 
+# gather the before and after values in the same column
+# mice2.long <- mice2 %>%
+#  gather(key = "group", value = "weight", before, after)
+
+# head(mice2.long, 3)
+
+# Compute some summary statistics by groups
+# mice2.long %>%
+#  group_by(group) %>%
+#  get_summary_stats(weight, type = "median_iqr")
+
+# Compute the differences between pairs
+# mice2 <- mice2 %>% mutate(differences = after - before)
+
+# Create histogram
+# gghistogram(mice2, x = "differences", y = "..density..", 
+#            fill = "steelblue",bins = 5, add_density = TRUE)
+
+# Computation
+# stat.test <- mice2.long  %>%
+#   wilcox_test(weight ~ group, paired = TRUE)
+# stat.test
+
+# Effect size
+# if (!require("coin")) install.packages("coin")
+# library(coin)
+
+# mice2.long  %>%
+#   wilcox_effsize(weight ~ group, paired = TRUE)
+
+
+
+# FRIEDMAN TEST
+head(sus, 10)
+
+# transforms the SUS data into long data
+# sus <- sus %>%
+#  gather(key = "Course", value = "score", t1, t2, t3) %>%
+#  convert_as_factor(id, time)
+# head(selfesteem, 3)
+
+# Compute some summary statistics by groups(time)
+# selfesteem %>%
+#  group_by(time) %>%
+#  get_summary_stats(score, type = "common")
+
+# Computation
+# friedman.test(y=selfesteem$score, groups = selfesteem$time, blocks = selfesteem$id)
+
+# friedman_test(score~time | id, selfesteem)
+
+# Effect size
+# selfesteem %>% friedman_effsize(score ~ time |id)
 
 
 ###
