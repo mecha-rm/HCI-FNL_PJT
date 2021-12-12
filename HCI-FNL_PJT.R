@@ -18,12 +18,14 @@ library(ggpubr) # qqplot
 library(dplyr)
 library(ggplot2)
 
-library(rstatix) # normality
+library(rstatix) # normality and wilcoxon
 library(pastecs) # homogeneity of Variances
 library(ez) # ezANOVA for Mixed Anova
 library(stats) # interaction plots
 library(reshape) # diverging stacked bargraphs
 library(likert) # diverging stacked bargraphs
+library(coin) # used for wilcoxon
+library(stats) # friedman
 
 # Exporting Information #
 auto_export <- FALSE # automatically export graphs
@@ -234,7 +236,8 @@ likColours <- c("#ffc7c7","#cdffc7","#c7f8ff","#ffff99","#fce3ff")
 
 # SUS #
 # wide data
-susWideData<-cast(sus, Participant + Course ~ Question, value = "Rank")
+# susWideData<-cast(sus, Participant + Order + Course ~ Question, value = "Rank")
+susWideData<-cast(sus, Participant + Order + Course ~ Question, value = "Rank")
 
 # amount printed is (end - start + 1)
 susWideData_start = 3
@@ -253,64 +256,66 @@ likSus <- likert::likert(susWideData[,c(susWideData_start:susWideData_end)], gro
 # plot
 plot(likSus, plot.percents = TRUE, colors = likColours, group.order = likOrder)
 
+# TESTS
+# used for effect size.
+if (!require("coin")) install.packages("coin") # friedman
+if (!require("stats")) install.packages("stats") # friedman
+if (!require("rstatix")) install.packages("rstatix") #wilcoxon
+
 # WILCOXON TEST
-# data("mice2", package = "datarium")
-# head(mice2, 3)
-
-# Transform into long data: 
-# gather the before and after values in the same column
-# mice2.long <- mice2 %>%
-#  gather(key = "group", value = "weight", before, after)
-
-# head(mice2.long, 3)
 
 # Compute some summary statistics by groups
-# mice2.long %>%
-#  group_by(group) %>%
-#  get_summary_stats(weight, type = "median_iqr")
+sus %>%
+  group_by(Order) %>%
+  get_summary_stats(Rank, type = "median_iqr")
 
 # Compute the differences between pairs
-# mice2 <- mice2 %>% mutate(differences = after - before)
+sus <- sus %>% mutate(differences = B - A)
 
 # Create histogram
-# gghistogram(mice2, x = "differences", y = "..density..", 
-#            fill = "steelblue",bins = 5, add_density = TRUE)
+gghistogram(sus, x = "differences", y = "..density..", fill = "steelblue", bins = 5, add_density = TRUE)
 
 # Computation
-# stat.test <- mice2.long  %>%
-#   wilcox_test(weight ~ group, paired = TRUE)
-# stat.test
+stat.test <- sus %>%
+   wilcox_test(Rank ~ Order, paired = TRUE)
 
-# Effect size
-# if (!require("coin")) install.packages("coin")
-# library(coin)
+stat.test
 
-# mice2.long  %>%
-#   wilcox_effsize(weight ~ group, paired = TRUE)
-
+# Effect Size
+sus  %>%
+  wilcox_effsize(Rank ~ Order, paired = TRUE)
 
 
 # FRIEDMAN TEST
 head(sus, 10)
 
-# transforms the SUS data into long data
-# sus <- sus %>%
-#  gather(key = "Course", value = "score", t1, t2, t3) %>%
-#  convert_as_factor(id, time)
-# head(selfesteem, 3)
+# TODO: remove
+# transforms the SUS data into long data (already in long data format)
+# sus_long <- sus %>%
+#   gather(key = "Course", value = "Time", A, B) %>%
+#  convert_as_factor(Participant, Course)
+# head(sus, 10)
 
-# Compute some summary statistics by groups(time)
-# selfesteem %>%
-#  group_by(time) %>%
-#  get_summary_stats(score, type = "common")
+# Compute some summary statistics by groups (course)
+sus %>%
+  group_by(Course) %>%
+  get_summary_stats(Rank, type = "common")
+
+# Compute some summary statistics by groups (order)
+sus %>%
+  group_by(Order) %>%
+  get_summary_stats(Rank, type = "common")
 
 # Computation
-# friedman.test(y=selfesteem$score, groups = selfesteem$time, blocks = selfesteem$id)
+friedman.test(y=sus$Rank, groups = sus$Course, blocks = sus$Participant)
+friedman.test(y=sus$Rank, groups = sus$Order, blocks = sus$Participant)
 
-# friedman_test(score~time | id, selfesteem)
+friedman_test(Rank~Course | Participant, sus)
+friedman_test(Rank~Order | Participant, sus)
 
-# Effect size
-# selfesteem %>% friedman_effsize(score ~ time |id)
+# Effect Size
+sus %>% friedman_effsize(Rank ~ Course | Participant)
+sus %>% friedman_effsize(Rank ~ Order | Participant)
 
 
 ###
