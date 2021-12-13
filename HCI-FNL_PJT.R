@@ -28,7 +28,7 @@ library(coin) # used for wilcoxon
 library(stats) # friedman
 
 # Exporting Information #
-auto_export <- FALSE # automatically export graphs
+auto_export <- TRUE # automatically export graphs
 export_path <- "exports" # export path from working directory
 
 # the rank clamps for the questionnaires
@@ -83,6 +83,12 @@ ggbarplot(data = vplData, x = "Order", y = "Time",
           merge = TRUE
           )
 
+# if the ggplot should be exported.
+if(auto_export) {
+  ggsave(filename = "hci-fnl_pjt-bar_plot_rd_v01.png", path = export_path)
+  ggsave(filename = "hci-fnl_pjt-bar_plot_rd_v01.eps", path = export_path)
+}
+
 # bar graph - ver. 2
 ggbarplot(data = vplData, x = "Order", y = "Time",
           color = "Order", palette = orderColours,
@@ -93,11 +99,39 @@ ggbarplot(data = vplData, x = "Order", y = "Time",
           merge = TRUE
 )
 
-# bar chart - ver. 3 (with error bars)
+# if the plot should be exported.
+if(auto_export) {
+  ggsave(filename = "hci-fnl_pjt-bar_plot_rd_v02.png", path = export_path)
+  ggsave(filename = "hci-fnl_pjt-bar_plot_rd_v02.eps", path = export_path)
+}
+
+# bargraph - ver. 3 (with error bars)
 bargraph <- ggplot(vplData, aes(Order, Time))
 bargraph + stat_summary(fun = mean, geom = "bar") + 
   stat_summary(fun.data = mean_sd,  geom = "errorbar", width = 0.3) + 
   labs(title = "HCI-FNL_PJT - Bar Graph (Raw Data)", x = "Order", y = "Time")
+
+# if the standard plot should be exported.
+if(auto_export) {
+  # both an absolute path and relative path works. This just shows the two ways of doing it.
+  
+  # png
+  f = paste(getwd(), export_path, "hci-fnl_pjt-bar_plot_errors.png", sep = "/")
+  dev.copy(png, f)
+  dev.off()
+  
+  # eps (requires a different setup)
+  setEPS()
+  f = paste(export_path, "hci-fnl_pjt-bar_plot_errors.eps", sep = "/")
+  postscript(f)
+  bargraph <- ggplot(vplData, aes(Order, Time))
+  bargraph + stat_summary(fun = mean, geom = "bar") + 
+    stat_summary(fun.data = mean_sd,  geom = "errorbar", width = 0.3) + 
+    labs(title = "HCI-FNL_PJT - Bar Graph (Raw Data)", x = "Order", y = "Time")
+  dev.off()
+  
+}
+
 
 # TODO: COUNTERBALANCE
 
@@ -113,6 +147,25 @@ vplData %>%
 # outlier check - ver. 1
 boxplot(formula = vplData$Time ~ vplData$Order)
 
+# if the standard plot should be exported.
+if(auto_export) {
+  # both an absolute path and relative path works. This just shows the two ways of doing it.
+  
+  # png
+  f = paste(getwd(), export_path, "hci-fnl_pjt-box_plot_order-time_ver01.png", sep = "/")
+  dev.copy(png, f)
+  dev.off()
+  
+  # eps (requires a different setup)
+  setEPS()
+  f = paste(export_path, "hci-fnl_pjt-box_plot_order-time_ver01.eps", sep = "/")
+  postscript(f)
+  boxplot(formula = vplData$Time ~ vplData$Order)
+  dev.off()
+  
+}
+
+
 # used for qqplots
 if (!require(ggpubr)) install.packages(ggpubr)
 
@@ -124,6 +177,13 @@ ggboxplot(data = vplData, x = "Order", y = "Time",
           fill = c("GREY", "GREY"),
           ylab = "Clear Time", xlab = "Order Group"
 )
+
+# if the ggplot should be exported.
+if(auto_export) {
+  ggsave(filename = "hci-fnl_pjt-box_plot_order-time_ver02.png", path = export_path)
+  ggsave(filename = "hci-fnl_pjt-box_plot_order-time_ver02.eps", path = export_path)
+}
+
 
 # TODO: remove outliers.
 # vplDataRaw <- vplData
@@ -139,6 +199,12 @@ vplData %>%
 
 ggqqplot(vplData, x = "Time", facet.by = "Course", 
          title = "HCI-FNL_PJT - QQPlot for Normality (Course Faceted)")
+
+# the ggqqplot
+if(auto_export) {
+  ggsave(filename = "hci-fnl_pjt-qqplot.png", path = export_path)
+  ggsave(filename = "hci-fnl_pjt-qqplot.eps", path = export_path)
+}
 
 ###
 # Assumption of Sphereicity
@@ -199,7 +265,29 @@ pairwise.t.test(vplData$Time, vplData$Order, paired=T, p.adjust.method ="bonferr
 bargraph <- ggplot(vplData, aes(Order, Time))
 bargraph + stat_summary(fun = mean, geom = "bar") + 
   stat_summary(fun.data = mean_sd,  geom = "errorbar", width = 0.3) + 
-  labs(title = "HCI-FNL_PJT - Bar Graph (Raw Data)", x = "Order", y = "Time")
+  labs(title = "HCI-FNL_PJT - Bar Graph (Adjusted)", x = "Order", y = "Time")
+
+
+# if the standard plot should be exported.
+if(auto_export) {
+  # both an absolute path and relative path works. This just shows the two ways of doing it.
+  
+  # png
+  f = paste(getwd(), export_path, "hci-fnl_pjt-bargraph_adjusted.png", sep = "/")
+  dev.copy(png, f)
+  dev.off()
+  
+  # eps (requires a different setup)
+  setEPS()
+  f = paste(export_path, "hci-fnl_pjt-bargraph_adjusted.eps", sep = "/")
+  postscript(f)
+  bargraph <- ggplot(vplData, aes(Order, Time))
+  bargraph + stat_summary(fun = mean, geom = "bar") + 
+    stat_summary(fun.data = mean_sd,  geom = "errorbar", width = 0.3) + 
+    labs(title = "HCI-FNL_PJT - Bar Graph (Adjusted)", x = "Order", y = "Time")
+  dev.off()
+  
+}
 
 
 # Interaction Plots (include these if the interactions are significant)
@@ -213,10 +301,54 @@ interaction.plot(x.factor = vplData$Order, trace.factor = vplData$Course,
                  response = vplData$Time, fun = mean, type = "b", legend = TRUE, 
                  xlab = "Order", ylab="Time", col = orderColours, trace.label ="Course")
 
+
+# if the standard plot should be exported.
+if(auto_export) {
+  # both an absolute path and relative path works. This just shows the two ways of doing it.
+  
+  # png
+  f = paste(getwd(), export_path, "hci-fnl_pjt-interaction_order_ver.png", sep = "/")
+  dev.copy(png, f)
+  dev.off()
+  
+  # eps (requires a different setup)
+  setEPS()
+  f = paste(export_path, "hci-fnl_pjt-interaction_order_ver.eps", sep = "/")
+  postscript(f)
+  interaction.plot(x.factor = vplData$Order, trace.factor = vplData$Course,
+                   response = vplData$Time, fun = mean, type = "b", legend = TRUE, 
+                   xlab = "Order", ylab="Time", col = orderColours, trace.label ="Course")
+  dev.off()
+  
+}
+
+
 # interaction plots (X = Course)
 interaction.plot(x.factor = vplData$Course, trace.factor = vplData$Order,
                  response = vplData$Time, fun = mean, type = "b", legend = TRUE, 
                  xlab = "Course", ylab="Time", col = orderColours, trace.label ="Order")
+
+
+
+# if the standard plot should be exported.
+if(auto_export) {
+  # both an absolute path and relative path works. This just shows the two ways of doing it.
+  
+  # png
+  f = paste(getwd(), export_path, "hci-fnl_pjt-interaction_course_ver.png", sep = "/")
+  dev.copy(png, f)
+  dev.off()
+  
+  # eps (requires a different setup)
+  setEPS()
+  f = paste(export_path, "hci-fnl_pjt-interaction_course_ver.eps", sep = "/")
+  postscript(f)
+  interaction.plot(x.factor = vplData$Course, trace.factor = vplData$Order,
+                   response = vplData$Time, fun = mean, type = "b", legend = TRUE, 
+                   xlab = "Course", ylab="Time", col = orderColours, trace.label ="Order")
+  dev.off()
+  
+}
 
 
 # QUALITIVE ANALYSES #
@@ -234,6 +366,7 @@ likColours <- c("#ffc7c7","#cdffc7","#c7f8ff","#ffff99","#fce3ff")
 # gets wide data version of the variables.
 
 
+# TODO: implement graph exports for SUS and QNAIRE
 # SUS #
 # wide data
 susWideData<-cast(sus, Participant + Order + Course ~ Question, value = "Rank") # question ver.
@@ -255,6 +388,8 @@ likSus <- likert::likert(susWideData[,c(susWideData_start:susWideData_end)], gro
 
 # plot
 plot(likSus, plot.percents = TRUE, colors = likColours, group.order = likOrder)
+
+# TODO: put in data for export once plot works.
 
 # TESTS
 # used for effect size.
