@@ -4,7 +4,7 @@
 # * Hao Tian Guan (100709845)
 # * Roderick "R.J." Montague (100701758)
 #
-# Date: 12/11/2021
+# Date: 12/12/2021
 #
 # Description: final project for human-computer interaction for games.
 #
@@ -63,10 +63,10 @@ qnaire$Rank[qnaire$Rank > qnaireClamps[2] ] <- qnaireClamps[2]
 # Participants: 10
 #
 # Order: order of courses done (A->B, or B->A)
-# - independent and between-subject (everyone is in every group).
+# - independent and between-subject (no group has everyone in it).
 # Course: course (A) or (B)
-# - independent and within-subject (no group has everyone in it).
-# Time: time it took to complete hte course.
+# - independent and within-subject (everyone is in every group).
+# Time: time it took to complete the course.
 
 # Two Groups (A->B, B->A)
 # Counterbalanced using 2X2 Latin Square (2 Possible Orders)
@@ -277,12 +277,15 @@ susWideDataCourses <- susWideDataCourses %>% mutate(differences = B - A)
 gghistogram(susWideDataCourses, x = "differences", y = "..density..", fill = "steelblue", bins = 5, add_density = TRUE)
 
 # Computation
-stat.test <- sus %>%
-   wilcox_test(Rank ~ Order, paired = TRUE)
+# stat.test <- sus %>%
+#   wilcox_test(Rank ~ Order, paired = TRUE)
+
+# stat.test <- susWideDataCourses %>%
+#  wilcox_test(Rank, paired = TRUE)
 
 #.TEST AND _TEST() are different.
 stat.test <- wilcox.test(x = sus$Rank, paired = FALSE)
-stat.tests
+stat.test
 
 # Effect Size
 sus  %>%
@@ -324,6 +327,8 @@ sus %>% friedman_effsize(Rank ~ Order | Participant)
 ###
 # QNAIRE #
 qnaireWideData<-cast(qnaire, Participant + Course ~ Question, value = "Rank")
+qnaireWideDataCourses<-cast(qnaire, Participant + Order + Question ~ Course, value = "Rank") # course ver.
+
 qnaireWideData_start = 3
 qnaireWideData_end = 8
 
@@ -336,7 +341,56 @@ likQnaire <- likert::likert(qnaireWideData[,c(qnaireWideData_start:qnaireWideDat
 # plot
 plot(likQnaire, plot.percents = TRUE, colors = likColours, group.order = likOrder)
 
+# -
 # TODO: perform Wilcoxon and Friedman tests.
+# WILCOXON TEST
+
+# Compute some summary statistics by groups
+qnaire %>%
+  group_by(Order) %>%
+  get_summary_stats(Rank, type = "median_iqr")
+
+# Compute the differences between pairs
+qnaireWideDataCourses <- qnaireWideDataCourses %>% mutate(differences = B - A)
+
+# Create histogram
+# TODO: change bin count
+gghistogram(susWideDataCourses, x = "differences", y = "..density..", fill = "steelblue", bins = 5, add_density = TRUE)
+
+# Computation
+#.TEST AND _TEST() are different.
+stat.test <- wilcox.test(x = qnaire$Rank, paired = FALSE)
+stat.test
+
+# Effect Size
+qnaire  %>%
+  wilcox_effsize(Rank ~ Order, paired = TRUE)
+
+
+# FRIEDMAN TEST
+head(qnaire, 8)
+
+# Compute some summary statistics by groups (course)
+qnaire %>%
+  group_by(Course) %>%
+  get_summary_stats(Rank, type = "common")
+
+# Compute some summary statistics by groups (order)
+qnaire %>%
+  group_by(Order) %>%
+  get_summary_stats(Rank, type = "common")
+
+# Computation
+friedman.test(y=qnaire$Rank, groups = qnaire$Course, blocks = qnaire$Participant)
+friedman.test(y=qnaire$Rank, groups = qnaire$Order, blocks = qnaire$Participant)
+
+friedman_test(Rank~Course | Participant, qnaire)
+friedman_test(Rank~Order | Participant, qnaire)
+
+# Effect Size
+qnaire %>% friedman_effsize(Rank ~ Course | Participant)
+qnaire %>% friedman_effsize(Rank ~ Order | Participant)
+
 
 # regarding free-form questions 
 print("See included report for free form question responses and reportings on findings.")
