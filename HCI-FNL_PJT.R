@@ -236,8 +236,8 @@ likColours <- c("#ffc7c7","#cdffc7","#c7f8ff","#ffff99","#fce3ff")
 
 # SUS #
 # wide data
-# susWideData<-cast(sus, Participant + Order + Course ~ Question, value = "Rank")
-susWideData<-cast(sus, Participant + Order + Course ~ Question, value = "Rank")
+susWideData<-cast(sus, Participant + Order + Course ~ Question, value = "Rank") # question ver.
+susWideDataCourses<-cast(sus, Participant + Order + Question ~ Course, value = "Rank") # course ver.
 
 # amount printed is (end - start + 1)
 susWideData_start = 3
@@ -270,20 +270,23 @@ sus %>%
   get_summary_stats(Rank, type = "median_iqr")
 
 # Compute the differences between pairs
-sus <- sus %>% mutate(differences = B - A)
+susWideDataCourses <- susWideDataCourses %>% mutate(differences = B - A)
 
 # Create histogram
-gghistogram(sus, x = "differences", y = "..density..", fill = "steelblue", bins = 5, add_density = TRUE)
+# TODO: change bin count
+gghistogram(susWideDataCourses, x = "differences", y = "..density..", fill = "steelblue", bins = 5, add_density = TRUE)
 
 # Computation
 stat.test <- sus %>%
    wilcox_test(Rank ~ Order, paired = TRUE)
 
-stat.test
+#.TEST AND _TEST() are different.
+stat.test <- wilcox.test(x = sus$Rank, paired = FALSE)
+stat.tests
 
 # Effect Size
 sus  %>%
-  wilcox_effsize(Rank ~ Order, paired = TRUE)
+   wilcox_effsize(Rank ~ Order, paired = TRUE)
 
 
 # FRIEDMAN TEST
