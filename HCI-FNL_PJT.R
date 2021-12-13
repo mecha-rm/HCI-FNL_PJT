@@ -10,6 +10,7 @@
 #
 # References:
 # - https://www.rdocumentation.org/packages/openxlsx/versions/4.2.4/topics/read.xlsx 
+# - https://stackoverflow.com/questions/21457505/friedman-test-unreplicated-complete-block-design-error
 
 # INFR 4350U: Human-Computer Interaction for Games - Final Project
 
@@ -369,7 +370,9 @@ likColours <- c("#ffc7c7","#cdffc7","#c7f8ff","#ffff99","#fce3ff")
 # TODO: implement graph exports for SUS and QNAIRE
 # SUS #
 # wide data
-susWideData<-cast(sus, Participant + Order + Course ~ Question, value = "Rank") # question ver.
+# NOTE: for some reason it doesn't like it when order is included.
+# susWideData<-cast(sus, Participant + Order + Course ~ Question, value = "Rank") # question ver.
+susWideData<-cast(sus, Participant + Course ~ Question, value = "Rank") # question ver.
 susWideDataCourses<-cast(sus, Participant + Order + Question ~ Course, value = "Rank") # course ver.
 
 # amount printed is (end - start + 1)
@@ -389,7 +392,23 @@ likSus <- likert::likert(susWideData[,c(susWideData_start:susWideData_end)], gro
 # plot
 plot(likSus, plot.percents = TRUE, colors = likColours, group.order = likOrder)
 
-# TODO: put in data for export once plot works.
+# if the standard plot should be exported.
+if(auto_export) {
+  # both an absolute path and relative path works. This just shows the two ways of doing it.
+  
+  # png
+  f = paste(getwd(), export_path, "hci-fnl_pjt-sus-diverging_stacked_bar_graph.png", sep = "/")
+  dev.copy(png, f)
+  dev.off()
+  
+  # eps (requires a different setup)
+  setEPS()
+  f = paste(export_path, "hci-fnl_pjt-sus-diverging_stacked_bar_graph.eps", sep = "/")
+  postscript(f)
+  plot(likSus, plot.percents = TRUE, colors = likColours, group.order = likOrder)
+  dev.off()
+  
+}
 
 # TESTS
 # used for effect size.
@@ -411,9 +430,16 @@ susWideDataCourses <- susWideDataCourses %>% mutate(differences = B - A)
 # TODO: change bin count
 gghistogram(susWideDataCourses, x = "differences", y = "..density..", fill = "steelblue", bins = 5, add_density = TRUE)
 
+# if the plot should be exported.
+if(auto_export) {
+  ggsave(filename = "hci-fnl_pjt-sus-histrogram.png", path = export_path)
+  ggsave(filename = "hci-fnl_pjt-sus-histrogram.eps", path = export_path)
+}
+
+
 # Computation
-# stat.test <- sus %>%
-#   wilcox_test(Rank ~ Order, paired = TRUE)
+stat.test <- sus %>%
+   wilcox_test(Rank ~ Order, paired = TRUE)
 
 # stat.test <- susWideDataCourses %>%
 #  wilcox_test(Rank, paired = TRUE)
@@ -447,12 +473,18 @@ sus %>%
   group_by(Order) %>%
   get_summary_stats(Rank, type = "common")
 
-# Computation
+# Computation (doesn't work for some reason)
+# uses within subject variable
 friedman.test(y=sus$Rank, groups = sus$Course, blocks = sus$Participant)
-friedman.test(y=sus$Rank, groups = sus$Order, blocks = sus$Participant)
 
+# table(groups, blocks)
+table(sus$Course, sus$Participant)
+
+# friedman.test(y=sus$Rank, groups = sus$Order, blocks = sus$Participant)
+
+# uses within subject variable
 friedman_test(Rank~Course | Participant, sus)
-friedman_test(Rank~Order | Participant, sus)
+# friedman_test(Rank~Order | Participant, sus)
 
 # Effect Size
 sus %>% friedman_effsize(Rank ~ Course | Participant)
@@ -461,6 +493,7 @@ sus %>% friedman_effsize(Rank ~ Order | Participant)
 
 ###
 # QNAIRE #
+# qnaireWideData<-cast(qnaire, Participant + Order + Course ~ Question, value = "Rank")
 qnaireWideData<-cast(qnaire, Participant + Course ~ Question, value = "Rank")
 qnaireWideDataCourses<-cast(qnaire, Participant + Order + Question ~ Course, value = "Rank") # course ver.
 
@@ -475,6 +508,24 @@ likQnaire <- likert::likert(qnaireWideData[,c(qnaireWideData_start:qnaireWideDat
 
 # plot
 plot(likQnaire, plot.percents = TRUE, colors = likColours, group.order = likOrder)
+
+# if the standard plot should be exported.
+if(auto_export) {
+  # both an absolute path and relative path works. This just shows the two ways of doing it.
+  
+  # png
+  f = paste(getwd(), export_path, "hci-fnl_pjt-sus-diverging_stacked_bar_graph.png", sep = "/")
+  dev.copy(png, f)
+  dev.off()
+  
+  # eps (requires a different setup)
+  setEPS()
+  f = paste(export_path, "hci-fnl_pjt-qnaire-diverging_stacked_bar_graph.eps", sep = "/")
+  postscript(f)
+  plot(likQnaire, plot.percents = TRUE, colors = likColours, group.order = likOrder)
+  dev.off()
+  
+}
 
 # -
 # TODO: perform Wilcoxon and Friedman tests.
@@ -491,6 +542,12 @@ qnaireWideDataCourses <- qnaireWideDataCourses %>% mutate(differences = B - A)
 # Create histogram
 # TODO: change bin count
 gghistogram(susWideDataCourses, x = "differences", y = "..density..", fill = "steelblue", bins = 5, add_density = TRUE)
+
+# if the plot should be exported.
+if(auto_export) {
+  ggsave(filename = "hci-fnl_pjt-qnaire-histrogram.png", path = export_path)
+  ggsave(filename = "hci-fnl_pjt-qnaire-histrogram.eps", path = export_path)
+}
 
 # Computation
 #.TEST AND _TEST() are different.
