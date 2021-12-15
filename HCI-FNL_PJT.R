@@ -4,7 +4,7 @@
 # * Hao Tian Guan (100709845)
 # * Roderick "R.J." Montague (100701758)
 #
-# Date: 12/12/2021
+# Date: 12/14/2021
 #
 # Description: final project for human-computer interaction for games.
 #
@@ -398,7 +398,7 @@ if(auto_export) {
   
   # png
   f = paste(getwd(), export_path, "hci-fnl_pjt-sus-diverging_stacked_bar_graph.png", sep = "/")
-  dev.copy(png, f)
+  dev.copy(png, f, width = 768, height = 1792)
   dev.off()
   
   # eps (requires a different setup)
@@ -498,7 +498,7 @@ qnaireWideData<-cast(qnaire, Participant + Course ~ Question, value = "Rank")
 qnaireWideDataCourses<-cast(qnaire, Participant + Order + Question ~ Course, value = "Rank") # course ver.
 
 qnaireWideData_start = 3
-qnaireWideData_end = 8
+qnaireWideData_end = 10
 
 # applying data
 qnaireWideData[qnaireWideData_start:qnaireWideData_end] <- lapply(qnaireWideData[qnaireWideData_start:qnaireWideData_end], factor, levels = 0:4)
@@ -514,8 +514,8 @@ if(auto_export) {
   # both an absolute path and relative path works. This just shows the two ways of doing it.
   
   # png
-  f = paste(getwd(), export_path, "hci-fnl_pjt-sus-diverging_stacked_bar_graph.png", sep = "/")
-  dev.copy(png, f)
+  f = paste(getwd(), export_path, "hci-fnl_pjt-qnaire-diverging_stacked_bar_graph.png", sep = "/")
+  dev.copy(png, f, width = 512, height = 768)
   dev.off()
   
   # eps (requires a different setup)
