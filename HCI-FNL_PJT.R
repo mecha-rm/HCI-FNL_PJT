@@ -29,7 +29,7 @@ library(coin) # used for wilcoxon
 library(stats) # friedman
 
 # Exporting Information #
-auto_export <- TRUE # automatically export graphs
+auto_export <- FALSE # automatically export graphs
 export_path <- "exports" # export path from working directory
 
 # the rank clamps for the questionnaires
@@ -201,11 +201,21 @@ vplData %>%
 ggqqplot(vplData, x = "Time", facet.by = "Course", 
          title = "HCI-FNL_PJT - QQPlot for Normality (Course Faceted)")
 
-# the ggqqplot
+# the qqplot (course faceted)
 if(auto_export) {
-  ggsave(filename = "hci-fnl_pjt-qqplot.png", path = export_path)
-  ggsave(filename = "hci-fnl_pjt-qqplot.eps", path = export_path)
+  ggsave(filename = "hci-fnl_pjt-qqplot_course_facet.png", path = export_path)
+  ggsave(filename = "hci-fnl_pjt-qqplot_course_facet.eps", path = export_path)
 }
+
+ggqqplot(vplData, x = "Time", facet.by = "Order", 
+         title = "HCI-FNL_PJT - QQPlot for Normality (Order Faceted)")
+
+# the qqplot (order facted)
+if(auto_export) {
+  ggsave(filename = "hci-fnl_pjt-qqplot_order_facet.png", path = export_path)
+  ggsave(filename = "hci-fnl_pjt-qqplot_order_facet.eps", path = export_path)
+}
+
 
 ###
 # Assumption of Sphereicity
